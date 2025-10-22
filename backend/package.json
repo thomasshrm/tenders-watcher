@@ -5,20 +5,35 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts"
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+    "prod": "nodemon src/index.ts",
+    "db:push": "drizzle-kit push --config=src/drizzle.config.ts",
+    "db:generate": "drizzle-kit generate --config=src/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=src/drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config=src/drizzle.config.ts",
+    "seed": "tsx src/db/seed.ts"
   },
   "author": "Thomas Schirm",
   "license": "ISC",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
     "dateparser": "^1.0.6",
     "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.6",
     "express": "^5.1.0",
-    "node-fetch": "^3.3.2"
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.16.3",
+    "postgres": "^3.4.7"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.9.1",
+    "@types/pg": "^8.15.5",
+    "drizzle-kit": "^0.31.5",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
