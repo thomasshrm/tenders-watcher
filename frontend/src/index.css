@@ -4,7 +4,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+html, body, #root { height: 100%; }
+
 :root {
+  @apply w-full min-h-screen; 
   font-family: 'Oxygen Mono', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -62,10 +65,12 @@ a:hover {
 
 body {
   margin: 0;
+  margin-top: 4vh;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  @apply bg-neutral-900 text-white;
 }
 
 h1 {

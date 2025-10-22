@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useCommandModal } from "@/features/command/command-modal-store";
 
 type Cmd = {
   code: string;
@@ -39,12 +40,14 @@ export function CommandBar() {
     )
   }, [value])
 
-  const executeCommand = (Cmd: Cmd) => {
-    Cmd.action()
-    setValue("")
-    setFocused(false)
-    inputRef.current?.blur()
-  }
+  const { openWith } = useCommandModal();
+
+  const executeCommand = (cmd: {code:string; label:string}) => {
+    openWith({ code: cmd.code, label: cmd.label, args: { query: value } });
+    setValue("");
+    setFocused(false);
+    inputRef.current?.blur();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
