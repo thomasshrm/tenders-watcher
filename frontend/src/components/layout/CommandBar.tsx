@@ -1,18 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { useCommandModal } from "@/features/command/command-modal-store";
-
-type Cmd = {
-  code: string;
-  label: string;
-  action: () => void
-}
-
-const COMMANDS: Cmd[] = [
-  { code: "CF", label: "SEC Filings", action: () => alert("Opening SEC Filings...") },
-  { code: "ML", label: "Market Lookup", action: () => alert("Opening Market Lookup...") },
-  { code: "US", label: "User Settings", action: () => alert("Opening User Settings...") },
-  { code: "LG", label: "Logs Viewer", action: () => alert("Opening Logs Viewer...") },
-]
+import { useCommandWindows } from "@/features/command/command-window-store";
+import { CommandList, type CommandCode } from "@/features/command/command-registry"
 
 export function CommandBar() {
   const [value, setValue] = useState("")
@@ -32,38 +20,32 @@ export function CommandBar() {
 
   const filtered = useMemo(() => {
     const q = value.toLowerCase().trim()
-    if (!q) return COMMANDS
-    return COMMANDS.filter(
-      (cmd) =>
-        cmd.label.toLowerCase().includes(q) ||
-        cmd.code.toLowerCase().includes(q)
-    )
+    if (!q) return CommandList
+    return CommandList.filter(c => c.label.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
   }, [value])
 
-  const { openWith } = useCommandModal();
+  const { open } = useCommandWindows();
 
-  const executeCommand = (cmd: {code:string; label:string}) => {
-    openWith({ code: cmd.code, label: cmd.label, args: { query: value } });
-    setValue("");
-    setFocused(false);
-    inputRef.current?.blur();
-  };
+  const executeCommand = (code: CommandCode) => {
+    open(code, { query: value })
+    setValue("")
+    setFocused(false)
+    inputRef.current?.blur()
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault()
 
-      const match = COMMANDS.find(
+      const match = CommandList.find(
         (c) =>
           c.code.toLowerCase() === value.toLowerCase().trim() ||
           c.label.toLowerCase() === value.toLowerCase().trim()
       )
       if (match) {
-        executeCommand(match)
+        executeCommand(match.code)           // <-- passe seulement le code
       } else if (filtered.length === 1) {
-        executeCommand(filtered[0])
-      } else {
-        console.log("Unknown command:", value)
+        executeCommand(filtered[0].code)     // <-- idem
       }
     }
   }
@@ -118,7 +100,7 @@ export function CommandBar() {
                   className="flex items-center gap-3 p-2 hover:bg-neutral-900 cursor-pointer transition-colors"
                   data-cmdpanel
                   tabIndex={-1}
-                  onClick={() => executeCommand(cmd)}
+                  onClick={() => executeCommand(cmd.code)}
                 >
                   <span className="px-1.5 py-0.5 text-[10px] rounded bg-neutral-800 text-amber-400 font-mono">
                     {cmd.code}
