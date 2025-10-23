@@ -40,7 +40,7 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
-
+app.use("/auth", authRoutes);
 app.use("/api", boampRoutes);
 app.get("/api/ping", (_req,res)=>res.json({pong:true}));
 
