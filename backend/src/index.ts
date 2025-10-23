@@ -23,7 +23,7 @@ const extraAllowed = (process.env.ALLOWED_ORIGINS ?? "")
 
 const allowedOrigins = Array.from(new Set([...defaultAllowed, ...extraAllowed]));
 
-import { router as api } from "./routes/api";
+import { router as api } from "./routes/api.route";
 
 const app = express();
 app.use(express.json());
