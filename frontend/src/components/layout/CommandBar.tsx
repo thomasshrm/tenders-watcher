@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useCommandWindows } from "@/features/command/command-window-store";
 import { CommandList, type CommandCode } from "@/features/command/command-registry"
+import { UserMenu } from "./UserMenu";
 
 export function CommandBar() {
   const [value, setValue] = useState("")
@@ -53,8 +54,8 @@ export function CommandBar() {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-[#111] border-b border-neutral-800">
       {/* Barre + indicateur focus */}
-      <div className="group focus-within:bg-[#0f0f0f] transition-colors">
-        <div className="h-10 px-6 flex items-center gap-2 font-mono text-sm text-neutral-200">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center transition-colors">
+        <div className="group relative h-10 px-6 flex items-center gap-2 font-mono text-sm text-neutral-200">
           <span className="text-neutral-300 mr-1 select-none">{">"}</span>
           <input
             ref={inputRef}
@@ -69,10 +70,11 @@ export function CommandBar() {
             placeholder={focused ? "Type a command" : "Press / to open terminal..."}
             className="w-full bg-transparent outline-none border-none placeholder:text-neutral-500 caret-neutral-200"
           />
+          <span className="w-full pointer-events-none absolute bottom-0 left-6 right-6 h-px origin-left scale-x-0 bg-teal-400/80 transition-transform group-focus-within:scale-x-100" />
         </div>
-
-        {/* Fine barre accent sous l'input visible seulement au focus */}
-        <div className="h-px w-full scale-x-0 group-focus-within:scale-x-100 origin-left bg-teal-400/80 transition-transform" />
+        <div className="h-10 px-6 flex items-center font-mono text-sm text-neutral-200">
+          <UserMenu />
+        </div>
       </div>
 
       {/* Liste visible uniquement quand l’input est focus */}

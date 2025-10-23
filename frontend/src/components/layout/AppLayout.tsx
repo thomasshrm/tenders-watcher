@@ -20,7 +20,7 @@ export default function AppLayout() {
     return (
         <div>
             <ModuleIfAuth>
-                <div className="min-h-screen bg-neutral-900 text-white">
+                <div className="min-h-full bg-neutral-900 text-white">
                 <CommandWindowProvider>
                     <CommandBar />
                     <main className="mx-auto max-w-6xl px-4 py-6">

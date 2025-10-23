@@ -72,7 +72,7 @@ export const AuthTokens = {
     },
     clear() {
         setTokens(null, null);
-        localStorage.remove("auth");
+        localStorage.removeItem("auth");
     },
 }
 
