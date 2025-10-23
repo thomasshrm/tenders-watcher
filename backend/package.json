@@ -16,7 +16,9 @@
   "author": "Thomas Schirm",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "dateparser": "^1.0.6",
     "dotenv": "^17.2.3",
@@ -28,7 +30,9 @@
     "postgres": "^3.4.7"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.9.1",

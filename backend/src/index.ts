@@ -1,22 +1,54 @@
 import "dotenv/config";
-import express from "express";
+import express from "express"
+import cors from 'cors';
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+dotenv.config()
+
+import { testDb } from "./db/client";
+
+const PORT = Number(process.env.PORT);
+
+const defaultAllowed = [
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
+  "http://localhost",
+  "http://127.0.0.1",
+].filter(Boolean);
+
+const extraAllowed = (process.env.ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([...defaultAllowed, ...extraAllowed]));
+
 import { router as api } from "./routes/api";
 
 const app = express();
 app.use(express.json());
-
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-  if (req.method === "OPTIONS") return res.sendStatus(200);
-  next();
-});
+app.use(cors({
+  origin(origin, cb) {
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+}));
+app.use(cookieParser());
 
 app.use("/api", api);
 app.get("/api/ping", (_req,res)=>res.json({pong:true}));
 
-const PORT = Number(process.env.PORT);
 app.listen(PORT, () => {
-    console.log(`Backend listening on http://localhost:${PORT}`)
+  console.log(`Backend listening on http://localhost:${PORT}`)
 });
+
+testDb().catch(err => {
+  console.error("DB connection failed:", err);
+  process.exit(1);
+});
+
+export default app;
