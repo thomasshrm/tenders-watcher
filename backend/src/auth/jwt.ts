@@ -14,13 +14,12 @@ const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES ?? "7d";
 export type AppJwtPayload = {
   sub: number;        // id utilisateur (nous on veut un number)
   email: string;
-  displayName: string;
+  name: string;
   role: string;
-  perms: string[];    // permissions
 };
 
 const commonOpts: Pick<SignOptions, "issuer" | "algorithm"> = {
-  issuer: "lowbudgettheta",
+  issuer: "tenders-watcher",
   algorithm: "HS256",
 };
 
@@ -31,9 +30,8 @@ export function signAccessToken(payload: AppJwtPayload): string {
     {
       sub: payload.sub,
       email: payload.email,
-      displayName: payload.displayName,
+      name: payload.name,
       role: payload.role,
-      perms: payload.perms ?? [],
     },
     ACCESS_SECRET,
     opts
@@ -64,9 +62,8 @@ export function verifyAccessToken(token: string): AppJwtPayload {
   return {
     sub: typeof d.sub === "number" ? d.sub : Number(d.sub),
     email: String(d.email),
-    displayName: String(d.displayName),
+    name: String(d.name),
     role: String(d.role ?? ""),
-    perms: Array.isArray(d.perms) ? d.perms.map(String) : [],
   };
 }
 
