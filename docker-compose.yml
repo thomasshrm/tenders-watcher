@@ -1,0 +1,75 @@
+name: tenders-watcher
+services:
+  backend:
+    build: 
+      context: ./backend
+      target: dev
+    container_name: tw-backend
+    ports:
+      - "5175:5175"
+    env_file:
+      - ./.env
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tsconfig.json:/app/tsconfig.json
+      - ./backend/package.json:/app/package.json
+      - ./backend/package-lock.json:/app/package-lock.json
+      - ./backend/src/drizzle.config.ts:/app/src/drizzle.config.ts
+    profiles:
+      - dev
+    depends_on:
+      - postgres
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    container_name: tw-frontend
+    ports:
+      - "5174:5174"
+    env_file:
+      - ./.env
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/package-lock.json:/app/package-lock.json
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+    profiles:
+      - dev
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: tw-postgres
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - appnet
+
+  pgadmin:
+    image: dpage/pgadmin4:9.9
+    container_name: tw-pgadmin
+    env_file:
+      - ./.env
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres
+    networks:
+      - appnet
+
+
+networks:
+  appnet:
+    driver: bridge
+
+volumes:
+  pg_data:
+    driver: local
