@@ -23,7 +23,8 @@ const extraAllowed = (process.env.ALLOWED_ORIGINS ?? "")
 
 const allowedOrigins = Array.from(new Set([...defaultAllowed, ...extraAllowed]));
 
-import { router as api } from "./routes/api.route";
+import authRoutes from "./routes/auth.route";
+import boampRoutes from "./routes/boamp.route";
 
 const app = express();
 app.use(express.json());
@@ -39,7 +40,8 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
-app.use("/api", api);
+
+app.use("/api", boampRoutes);
 app.get("/api/ping", (_req,res)=>res.json({pong:true}));
 
 app.listen(PORT, () => {

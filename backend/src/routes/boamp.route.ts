@@ -44,3 +44,5 @@ router.get("/expiring", async (req, res) => {
 router.get("/status", (_req, res) => {
   return res.json({ ok: true, uptime: process.uptime() });
 });
+
+export default router;
