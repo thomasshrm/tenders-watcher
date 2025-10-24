@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { fetchExpiringContracts } from "../services/boamp";
+import { open, readFileSync } from 'node:fs';
 
 export const router = Router();
 
@@ -37,6 +38,20 @@ router.get("/expiring", async (req, res) => {
         console.error(e);
         res.status(500).json({ error: e?.message ?? "Internal error" });
     } 
+});
+
+router.get("/descripteurs", async (req, res) => {
+    try {
+        const data = readFileSync("./src/resources/boamp/descripteurs.json", "utf-8");
+        const descripteurs = JSON.parse(data);
+        const rows = Object.keys(descripteurs).map(function (key) {
+            return descripteurs[key];
+        }).sort((a, b) => Number(a.mc_code) - Number(b.mc_code)); 
+        res.json({rows});
+    } catch (e: any) {
+        console.error(e);
+        res.status(500).json({ error: e?.message ?? "Internal error" });
+    }
 });
 
 // ✅ Répondre quelque chose
