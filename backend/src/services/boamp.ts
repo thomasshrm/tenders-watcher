@@ -5,6 +5,8 @@ type OdsRecord = {
   idweb?: string;
   id?: string;
   objet?: string;
+  titulaire?: string;
+  departement?: string;
   nomacheteur?: string;
   dateparution?: string;         // "YYYY-MM-DD"
   url_avis?: string;
@@ -205,10 +207,15 @@ export async function fetchExpiringContracts(opts: {
           renouvellement = undefined;
         }
 
+        let titulaire = results[i]?.titulaire ? results[i]?.titulaire[0] : undefined;
+        let departement = results[i]?.code_departement ? results[i]?.code_departement[0] : undefined;
+
         items.push({
             idweb: results[i].idweb,
             id: results[i].id,
             objet: results[i].objet,
+            departement: departement,
+            titulaire: titulaire,
             nomacheteur: results[i].nomacheteur,
             dateparution: results[i].dateparution,         // "YYYY-MM-DD"
             url_avis: results[i].url_avis,
@@ -221,8 +228,6 @@ export async function fetchExpiringContracts(opts: {
             datefin: datefin,
         });
     }
-
-    console.log(items);
 
     return items;
 

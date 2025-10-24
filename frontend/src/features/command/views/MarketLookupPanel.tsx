@@ -15,6 +15,8 @@ type Market = {
   idweb: string
   id: string
   objet: string
+  departement: string
+  titulaire: string
   nomacheteur: string
   dateparution: string
   url_avis: string
@@ -27,6 +29,41 @@ type Market = {
   datefin: string
 }
 
+const cpvInspect = [
+  "48972000",
+  "48730000",
+  "48931000",
+  "48219200",
+  "72212600",
+  "72126100",
+  "48321000",
+  "48518000",
+  "72212442",
+  "48131000",
+  "72227000",
+  "72212900",
+  "48325000",
+  "72223000",
+  "72212463",
+  "48942000",
+  "72140000",
+  "48312000",
+  "48700000",
+  "48317000",
+  "48217000",
+  "48000000",
+  "72000000",
+  "30200000",
+  "72212911",
+  "48110000",
+  "48200000",
+  "48000000",
+  "48300000",
+  "48400000",
+  "48500000",
+  "48700000",
+];
+
 export default function MarketLookupPanel() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,7 +74,8 @@ export default function MarketLookupPanel() {
     try{
       setLoading(true)
       setError(null)
-      const { data } = await api.get("/api/expiring?keywords=informatique&departement=54,57,88&cpv=48972000,48730000,48931000,48219200,72212600,7212610,48321000,48518000,72212442,48131000,72227000,72212900,48325000,7222300,72212463,48942000,72140000,48312000,48700000,48317000,48217000,48000000,72000000,30200000&fallbackMonths=42&horizonMonths=1")
+      let cpvFormat = cpvInspect.toString();
+      const { data } = await api.get(`/api/expiring?keywords=informatique&departement=54,57,88,55,51,52,67,68&cpv=${cpvFormat}&fallbackMonths=48&horizonMonths=6`)
       console.log(data)
       setMarkets(Array.isArray(data?.rows) ? data.rows : [])
     } catch (e: any) {
@@ -68,9 +106,11 @@ export default function MarketLookupPanel() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[80px] text-white">ID</TableHead>
+              <TableHead className="w-[40px] text-white">DPT</TableHead>
               <TableHead className="w-[150px] text-white">Client</TableHead>
               <TableHead className="text-white">Objet</TableHead>
               <TableHead className="w-[120px] text-white">Date avis</TableHead>
+              <TableHead className="w-[120px] text-white">Titulaire</TableHead>
               <TableHead className="w-[60px] text-white">Durée</TableHead>
               <TableHead className="w-[60px] text-white">Renew</TableHead>
               <TableHead className="w-[120px] text-white">Date fin</TableHead>
@@ -83,10 +123,12 @@ export default function MarketLookupPanel() {
             !error &&
             markets.map((market) => (
               <TableRow key={market.idweb} className="hover:bug-muted/50">
-                <TableCell>{market.annonce_lie}</TableCell>
+                <TableCell>{market.idweb}</TableCell>
+                <TableCell>{market.departement}</TableCell>
                 <TableCell className="whitespace-normal wrap-break-word">{market.nomacheteur}</TableCell>
                 <TableCell className="whitespace-normal wrap-break-word">{market.objet}</TableCell>
                 <TableCell className="whitespace-normal wrap-break-word">{market.dateparution}</TableCell>
+                <TableCell className="whitespace-normal wrap-break-word">{market.titulaire}</TableCell>
                 <TableCell>{market.duree}</TableCell>
                 { market.datefin && market.renouvellement ? 
                   <TableCell className="text-red-400">Oui</TableCell> :
