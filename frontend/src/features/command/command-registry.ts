@@ -6,25 +6,10 @@ import { lazy } from "react"
  * On met TOUT ici: label, vue (lazy) et tailles par défaut.
  */
 export const COMMANDS = {
-  CF: {
-    label: "SEC Filings",
-    view: lazy(() => import("./views/SecFilingsPanel")),
-    size: { w: 700, h: 480 },
-  },
   ML: {
     label: "Market Lookup",
     view: lazy(() => import("./views/MarketLookupPanel")),
     size: { w: 900, h: 600 },
-  },
-  US: {
-    label: "User Settings",
-    view: lazy(() => import("./views/UserSettingsPanel")),
-    size: { w: 520, h: 380 },
-  },
-  LG: {
-    label: "Logs Viewer",
-    view: lazy(() => import("./views/LogsViewerPanel")),
-    size: { w: 1000, h: 700 },
   },
 } as const
 

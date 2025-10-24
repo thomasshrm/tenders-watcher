@@ -157,7 +157,7 @@ export async function fetchExpiringContracts(opts: {
     const items: OdsRecord[] = []
 
     for (let i = 0; i <= totalCount - 1; i++) {
-        const linkedAnnonce = results[i].annonce_lie[0];
+        const linkedAnnonce = results[i].annonce_lie ? results[i].annonce_lie[0] : undefined;
         let duree: string | undefined;
         let renouvellement: string | undefined;
 
@@ -205,13 +205,13 @@ export async function fetchExpiringContracts(opts: {
             donnees: results[i].gestion,             // JSON string contenant plein d'infos (dont NB_ANNEE parfois)
             descripteur_libelle: results[i].descripteur_libelle, // mots-clés
             type_marche_facette: results[i].type_marche_facette,
-            annonce_lie: results[i].annonce_lie[0],
+            annonce_lie: results[i].annonce_lie ? results[i].annonce_lie[0] : undefined,
             duree: duree,
             renouvellement: renouvellement,
         });
-
-        console.log(items);
     }
+
+    return items;
 
     //const items: OdsRecord[] = Array.isArray(data?.results) ? data.results : [];
 
