@@ -61,7 +61,7 @@ function toISODate(d?: Date): string | undefined {
 export async function fetchExpiringContracts(opts: {
   keywordsCSV: string;
   departement?: string;            // (peut se matcher dans texte via search)
-  cpv?: string;
+  descripteur?: string;
   maxResults?: number;        // pagination
   fallbackMonths?: number;
   horizonMonths?: number;     // default 6
@@ -115,21 +115,21 @@ export async function fetchExpiringContracts(opts: {
         }
     }
 
-    // gestion des CPV
-    if (opts.cpv) {
-        const cpvList = opts.cpv
+    // gestion des codes descripteurs
+    if (opts.descripteur) {
+        const descs = opts.descripteur
             .split(",")
             .map(s => s.trim())
             .filter(Boolean);
-        if (cpvList.length) {
-            const cpVClause = cpvList
-                .map(c => `search(donnees, "${c}")`)
+        if(descs.length) {
+            const clause = descs
+                .map(d => `descripteur_code = "${d}"`)
                 .join(" OR ");
             const existing = params.get("where");
             if (existing) {
-                params.set("where", `${existing} AND (${cpVClause})`);
+                params.set("where", `${existing} AND (${clause})`);
             } else {
-                params.set("where", `(${cpVClause})`)
+                params.set("where", `(${clause})`);
             }
         }
     }
@@ -143,6 +143,8 @@ export async function fetchExpiringContracts(opts: {
     // On laisse sans where strict ici, le filtrage final se fait sur expiration.
 
     const url = `${apiUrl}/records?${params.toString()}`;
+
+    console.log(url);
 
     const r = await fetch(url, { method: "GET" });
     if (!r.ok) {
@@ -160,7 +162,7 @@ export async function fetchExpiringContracts(opts: {
     const items: OdsRecord[] = []
 
     for (let i = 0; i <= totalCount - 1; i++) {
-        const linkedAnnonce = results[i].annonce_lie ? results[i].annonce_lie[0] : undefined;
+        const linkedAnnonce = results[i]?.annonce_lie ? results[i].annonce_lie[0] : undefined;
         let duree: number | undefined;
         let renouvellement: string | undefined;
         let datefin: string | undefined;

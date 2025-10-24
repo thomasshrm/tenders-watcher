@@ -29,39 +29,30 @@ type Market = {
   datefin: string
 }
 
-const cpvInspect = [
-  "48972000",
-  "48730000",
-  "48931000",
-  "48219200",
-  "72212600",
-  "72126100",
-  "48321000",
-  "48518000",
-  "72212442",
-  "48131000",
-  "72227000",
-  "72212900",
-  "48325000",
-  "72223000",
-  "72212463",
-  "48942000",
-  "72140000",
-  "48312000",
-  "48700000",
-  "48317000",
-  "48217000",
-  "48000000",
-  "72000000",
-  "30200000",
-  "72212911",
-  "48110000",
-  "48200000",
-  "48000000",
-  "48300000",
-  "48400000",
-  "48500000",
-  "48700000",
+const descripteurIndex = [
+  23,
+  204,
+  97,
+  81,
+  162,
+  454,
+  107,
+  207,
+  338,
+  47,
+  14,
+  453,
+  463,
+  339,
+  402,
+  283,
+  186,
+  2,
+  21,
+  133,
+  171,
+  163,
+  68,
 ];
 
 export default function MarketLookupPanel() {
@@ -74,8 +65,8 @@ export default function MarketLookupPanel() {
     try{
       setLoading(true)
       setError(null)
-      let cpvFormat = cpvInspect.toString();
-      const { data } = await api.get(`/api/expiring?keywords=informatique&departement=54,57,88,55,51,52,67,68&cpv=${cpvFormat}&fallbackMonths=48&horizonMonths=6`)
+      let descripteurFormat = descripteurIndex.toString();
+      const { data } = await api.get(`/api/expiring?keywords=informatique&departement=54,57,88,55,51,52,67,68&descripteur=${descripteurFormat}&fallbackMonths=45&horizonMonths=1`)
       console.log(data)
       setMarkets(Array.isArray(data?.rows) ? data.rows : [])
     } catch (e: any) {
