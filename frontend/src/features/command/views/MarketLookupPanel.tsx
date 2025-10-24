@@ -9,6 +9,7 @@ import {
   TableHeader, 
   TableRow,
 } from '@/components/ui/table'
+import { Link } from "react-router-dom";
 
 type Market = {
   idweb: string
@@ -21,8 +22,9 @@ type Market = {
   descripteur_libelle: string
   type_marche_facette: string
   annonce_lie: string
-  duree: string
+  duree: number
   renouvellement: string
+  datefin: string
 }
 
 export default function MarketLookupPanel() {
@@ -35,7 +37,7 @@ export default function MarketLookupPanel() {
     try{
       setLoading(true)
       setError(null)
-      const { data } = await api.get("/api/expiring?keywords=informatique&departement=54,57,88&cpv=48000000,72000000,30200000&fallbackMonths=42&horizonMonths=6")
+      const { data } = await api.get("/api/expiring?keywords=informatique&departement=54,57,88&cpv=48972000,48730000,48931000,48219200,72212600,7212610,48321000,48518000,72212442,48131000,72227000,72212900,48325000,7222300,72212463,48942000,72140000,48312000,48700000,48317000,48217000,48000000,72000000,30200000&fallbackMonths=42&horizonMonths=1")
       console.log(data)
       setMarkets(Array.isArray(data?.rows) ? data.rows : [])
     } catch (e: any) {
@@ -70,6 +72,10 @@ export default function MarketLookupPanel() {
               <TableHead className="text-white">Objet</TableHead>
               <TableHead className="w-[120px] text-white">Date avis</TableHead>
               <TableHead className="w-[60px] text-white">Durée</TableHead>
+              <TableHead className="w-[60px] text-white">Renew</TableHead>
+              <TableHead className="w-[120px] text-white">Date fin</TableHead>
+              <TableHead className="text-white">Info renew</TableHead>
+              <TableHead className="w-[60px] text-white">Lien</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -77,11 +83,26 @@ export default function MarketLookupPanel() {
             !error &&
             markets.map((market) => (
               <TableRow key={market.idweb} className="hover:bug-muted/50">
-                <TableCell>{market.idweb}</TableCell>
+                <TableCell>{market.annonce_lie}</TableCell>
                 <TableCell className="whitespace-normal wrap-break-word">{market.nomacheteur}</TableCell>
                 <TableCell className="whitespace-normal wrap-break-word">{market.objet}</TableCell>
                 <TableCell className="whitespace-normal wrap-break-word">{market.dateparution}</TableCell>
                 <TableCell>{market.duree}</TableCell>
+                { market.datefin && market.renouvellement ? 
+                  <TableCell className="text-red-400">Oui</TableCell> :
+                  market.renouvellement && !market.datefin ?
+                  <TableCell>Oui</TableCell> :
+                  !market.renouvellement && market.datefin ?
+                  <TableCell className="text-green-300">Non</TableCell> :
+                  <TableCell>Non</TableCell>
+                }
+                { market.datefin && !market.renouvellement ? 
+                  <TableCell className="text-green-300">{market.datefin}</TableCell> : 
+                  market.datefin && market.renouvellement ?
+                  <TableCell className="text-red-400">{market.datefin}</TableCell> : 
+                  <TableCell></TableCell> }
+                <TableCell className="whitespace-normal wrap-break-word">{market.renouvellement}</TableCell>
+                <TableCell>{market.annonce_lie ? <Link to={`https://www.boamp.fr/pages/avis/?q=idweb:${market.annonce_lie}`} target="_blank" rel="noopener noreferrer" >GO</Link> : ""}</TableCell>
               </TableRow>
             ))}
           </TableBody>

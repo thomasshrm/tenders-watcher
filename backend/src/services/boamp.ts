@@ -1,4 +1,4 @@
-import { addMonths, isAfter, isBefore } from "date-fns";
+import { addMonths, isAfter, isBefore, isValid, parseISO } from "date-fns";
 
 /** Record du dataset boamp-datadila (simplifié) */
 type OdsRecord = {
@@ -12,8 +12,9 @@ type OdsRecord = {
   descripteur_libelle?: string[]; // mots-clés
   type_marche_facette?: string[]; // "Services", ...
   annonce_lie?: string[];
-  duree?: string;
+  duree?: number;
   renouvellement?: string;
+  datefin?: string;
   // ... d'autres champs dispo si besoin
 };
 
@@ -158,8 +159,11 @@ export async function fetchExpiringContracts(opts: {
 
     for (let i = 0; i <= totalCount - 1; i++) {
         const linkedAnnonce = results[i].annonce_lie ? results[i].annonce_lie[0] : undefined;
-        let duree: string | undefined;
+        let duree: number | undefined;
         let renouvellement: string | undefined;
+        let datefin: string | undefined;
+        const parutionStr: string | undefined = results[i]?.dateparution;
+        const baseDate = parutionStr ? parseISO(parutionStr) : undefined;
 
         if (linkedAnnonce) {
           const urlLinked = `${apiUrl}/records?refine=idweb%3A${linkedAnnonce}`;
@@ -183,9 +187,15 @@ export async function fetchExpiringContracts(opts: {
               const rawDuree = lot?.DUREE_MOIS ?? lot?.CARACTERISTIQUES?.DUREE_MOIS ?? null;
               if (rawDuree != null) {
                 const n = Number(String(rawDuree).replace(",", "."));
-                if (!Number.isNaN(n) && n > 0) duree = String(Math.round(n));
+                if (!Number.isNaN(n) && n > 0) duree = Number(Math.round(n));
               }
               renouvellement = lot?.RENOUVELLEMENT_DESCRIPTION ?? undefined;
+              if (baseDate && isValid(baseDate) && typeof duree === "number" && Number.isFinite(duree)) {
+                const d = addMonths(baseDate, duree);
+                datefin = d.toISOString().slice(0, 10);
+              } else {
+                datefin = undefined;
+              }
             } catch (e) {
               console.warn("JSON donnees parse error: ", e);
             }
@@ -208,8 +218,11 @@ export async function fetchExpiringContracts(opts: {
             annonce_lie: results[i].annonce_lie ? results[i].annonce_lie[0] : undefined,
             duree: duree,
             renouvellement: renouvellement,
+            datefin: datefin,
         });
     }
+
+    console.log(items);
 
     return items;
 

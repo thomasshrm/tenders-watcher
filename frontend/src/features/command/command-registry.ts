@@ -9,7 +9,7 @@ export const COMMANDS = {
   ML: {
     label: "Market Lookup",
     view: lazy(() => import("./views/MarketLookupPanel")),
-    size: { w: 900, h: 600 },
+    size: { w: 1300, h: 700 },
   },
 } as const
 
