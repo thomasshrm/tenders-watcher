@@ -27,7 +27,8 @@
     "jsonwebtoken": "^9.0.2",
     "node-fetch": "^3.3.2",
     "pg": "^8.16.3",
-    "postgres": "^3.4.7"
+    "postgres": "^3.4.7",
+    "react-hook-form": "^7.65.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

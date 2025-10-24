@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { z } from 'zod';
 import { useAuth } from "@/features/auth/auth-context";
 import {
   Table, 
@@ -10,6 +11,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Link } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 type Market = {
   idweb: string
@@ -29,40 +36,56 @@ type Market = {
   datefin: string
 }
 
-const cpvInspect = [
-  "48972000",
-  "48730000",
-  "48931000",
-  "48219200",
-  "72212600",
-  "72126100",
-  "48321000",
-  "48518000",
-  "72212442",
-  "48131000",
-  "72227000",
-  "72212900",
-  "48325000",
-  "72223000",
-  "72212463",
-  "48942000",
-  "72140000",
-  "48312000",
-  "48700000",
-  "48317000",
-  "48217000",
-  "48000000",
-  "72000000",
-  "30200000",
-  "72212911",
-  "48110000",
-  "48200000",
-  "48000000",
-  "48300000",
-  "48400000",
-  "48500000",
-  "48700000",
+const descripteurIndex = [
+  23,
+  204,
+  97,
+  81,
+  162,
+  454,
+  107,
+  207,
+  338,
+  47,
+  14,
+  453,
+  463,
+  339,
+  402,
+  283,
+  186,
+  2,
+  21,
+  133,
+  171,
+  163,
+  68,
 ];
+
+const departementIndex = [
+  54,
+  55,
+  57,
+  88,
+  67,
+  68,
+  51,
+  52
+]
+
+const descripteurFormat = descripteurIndex.toString();
+const departementFormat = departementIndex.toString();
+
+const schema = z.object({
+  descripteur: z.string().nonempty(),
+  departement: z.string().nonempty(),
+  fallback_month: z.number().min(1, "Minimum 1 mois").default(48),
+  horizon_month: z.number().min(1, "Minimum 1 mois").max(12, "Maximum 12 mois").default(3),
+})
+
+type FormSchema = typeof schema;
+type FormInput = z.input<typeof schema>;
+type FormOutput = z.output<typeof schema>;
 
 export default function MarketLookupPanel() {
   const [markets, setMarkets] = useState<Market[]>([]);
@@ -70,13 +93,29 @@ export default function MarketLookupPanel() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth() as any;
 
+  const form = useForm<FormInput>({
+    resolver: zodResolver(schema),
+  })
+
+  async function onSubmit(values: FormInput) {
+    setLoading(true)
+    setError(null)
+    try {
+      const parsed = schema.parse(values)
+      const { data } = await api.get(`/api/expiring?departement=${parsed.departement}&descripteur=${parsed.descripteur}&fallbackMonths=${parsed.fallback_month}&horizonMonths=${parsed.horizon_month}`)
+      setMarkets(Array.isArray(data?.rows) ? data.rows : [])
+    } catch (e: any) {
+      setError(e?.message ?? "Unknown error")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const fetchMarkets = async () => {
     try{
       setLoading(true)
       setError(null)
-      let cpvFormat = cpvInspect.toString();
-      const { data } = await api.get(`/api/expiring?keywords=informatique&departement=54,57,88,55,51,52,67,68&cpv=${cpvFormat}&fallbackMonths=48&horizonMonths=6`)
-      console.log(data)
+      const { data } = await api.get(`/api/expiring?departement=${departementFormat}&descripteur=${descripteurFormat}&fallbackMonths=45&horizonMonths=1`)
       setMarkets(Array.isArray(data?.rows) ? data.rows : [])
     } catch (e: any) {
       setError(e?.message ?? "Erreur inconnue")
@@ -85,15 +124,59 @@ export default function MarketLookupPanel() {
     }
   }
 
-  useEffect(() => {
+  /**useEffect(() => {
     if (!user) return;
     fetchMarkets();
-  }, [user]);
+  }, [user]);*/
 
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-semibold">Market Lookup</h3>
       <p className="text-sm text-neutral-400">Rechercher les attributions au cours de la période sélectionnée.</p>
+      <form 
+        className="space-y-4"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
+          <div className="grid gap-2">
+            <Label htmlFor='descripteur'>Descripteurs</Label>
+            <Input id='descripteur' type='text' {...form.register('descripteur')} defaultValue={descripteurFormat} />
+            {
+              form.formState.errors.descripteur && (
+                <p className="text-sm text-destructive">{form.formState.errors.descripteur.message}</p>
+              )
+            }
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor='departement'>Départements</Label>
+            <Input id='departement' type='text' {...form.register('departement')} defaultValue={departementFormat} />
+            {
+              form.formState.errors.departement && (
+                <p className="text-sm text-destructive">{form.formState.errors.departement.message}</p>
+              )
+            }
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor='fallback_month'>Mois en arrière</Label>
+            <Input id='fallback_month' type='number' {...form.register('fallback_month', {valueAsNumber: true})} defaultValue="48" />
+            {
+              form.formState.errors.fallback_month && (
+                <p className="text-sm text-destructive">{form.formState.errors.fallback_month.message}</p>
+              )
+            }
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor='horizon_month'>Nombre de mois à rechercher</Label>
+            <Input id='horizon_month' type='number' {...form.register('horizon_month', {valueAsNumber:true})} defaultValue="3" />
+            {
+              form.formState.errors.horizon_month && (
+                <p className="text-sm text-destructive">{form.formState.errors.horizon_month.message}</p>
+              )
+            }
+          </div>
+            <Button type="submit" disabled={loading}>
+              {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Recherche en cours...</> : "Rechercher"}
+            </Button>
+      </form>
       {loading && <p>Loading...</p>}
       {error && <p>Error</p>}
 
@@ -114,7 +197,7 @@ export default function MarketLookupPanel() {
               <TableHead className="w-[60px] text-white">Durée</TableHead>
               <TableHead className="w-[60px] text-white">Renew</TableHead>
               <TableHead className="w-[120px] text-white">Date fin</TableHead>
-              <TableHead className="text-white">Info renew</TableHead>
+              {/**<TableHead className="text-white">Info renew</TableHead>*/}
               <TableHead className="w-[60px] text-white">Lien</TableHead>
             </TableRow>
           </TableHeader>
@@ -143,7 +226,7 @@ export default function MarketLookupPanel() {
                   market.datefin && market.renouvellement ?
                   <TableCell className="text-red-400">{market.datefin}</TableCell> : 
                   <TableCell></TableCell> }
-                <TableCell className="whitespace-normal wrap-break-word">{market.renouvellement}</TableCell>
+                {/**<TableCell className="whitespace-normal wrap-break-word">{market.renouvellement}</TableCell>*/}
                 <TableCell>{market.annonce_lie ? <Link to={`https://www.boamp.fr/pages/avis/?q=idweb:${market.annonce_lie}`} target="_blank" rel="noopener noreferrer" >GO</Link> : ""}</TableCell>
               </TableRow>
             ))}
