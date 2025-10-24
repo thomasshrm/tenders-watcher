@@ -15,8 +15,8 @@ export const router = Router();
 //GET /api/expiring?keywords=informatique&departement=54,57,88&cpv=48000000,72000000,30200000&fallbackMonths=48&horizonMonths=6
 router.get("/expiring", async (req, res) => {
     try {
-        const keywords = String(req.query.keywords ?? "").trim();
-        if (!keywords) return res.status(400).json({ error: "keywords is required (comma-separated)" });
+        /**const keywords = String(req.query.keywords ?? "").trim();
+        if (!keywords) return res.status(400).json({ error: "keywords is required (comma-separated)" });*/
 
         const departement = req.query.departement ? String(req.query.departement) : undefined;
         const descripteur = req.query.descripteur ? String(req.query.descripteur) : undefined;
@@ -25,7 +25,6 @@ router.get("/expiring", async (req, res) => {
         const horizonMonths = req.query.horizonMonths ? Number(req.query.horizonMonths) : 6;
 
         const rows = await fetchExpiringContracts({
-            keywordsCSV: keywords,
             departement,
             descripteur,
             maxResults: max,

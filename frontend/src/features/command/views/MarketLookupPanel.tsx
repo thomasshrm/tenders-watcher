@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Link } from "react-router-dom";
+import { Input } from "@/components/ui/input";
 
 type Market = {
   idweb: string
@@ -55,6 +56,20 @@ const descripteurIndex = [
   68,
 ];
 
+const departementIndex = [
+  54,
+  55,
+  57,
+  88,
+  67,
+  68,
+  51,
+  52
+]
+
+const descripteurFormat = descripteurIndex.toString();
+const departementFormat = departementIndex.toString();
+
 export default function MarketLookupPanel() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(false);
@@ -65,8 +80,7 @@ export default function MarketLookupPanel() {
     try{
       setLoading(true)
       setError(null)
-      let descripteurFormat = descripteurIndex.toString();
-      const { data } = await api.get(`/api/expiring?keywords=informatique&departement=54,57,88,55,51,52,67,68&descripteur=${descripteurFormat}&fallbackMonths=45&horizonMonths=1`)
+      const { data } = await api.get(`/api/expiring?departement=${departementFormat}&descripteur=${descripteurFormat}&fallbackMonths=45&horizonMonths=1`)
       console.log(data)
       setMarkets(Array.isArray(data?.rows) ? data.rows : [])
     } catch (e: any) {
@@ -85,6 +99,12 @@ export default function MarketLookupPanel() {
     <div className="space-y-2">
       <h3 className="text-lg font-semibold">Market Lookup</h3>
       <p className="text-sm text-neutral-400">Rechercher les attributions au cours de la période sélectionnée.</p>
+      <form action="">
+        <Input name="descripteurs" value={descripteurFormat}/>
+        <br />
+        <br />
+        <Input name="departements" value={departementFormat} />
+      </form>
       {loading && <p>Loading...</p>}
       {error && <p>Error</p>}
 

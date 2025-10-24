@@ -59,7 +59,7 @@ function toISODate(d?: Date): string | undefined {
 }
 
 export async function fetchExpiringContracts(opts: {
-  keywordsCSV: string;
+  keywordsCSV?: string;
   departement?: string;            // (peut se matcher dans texte via search)
   descripteur?: string;
   maxResults?: number;        // pagination
@@ -68,8 +68,8 @@ export async function fetchExpiringContracts(opts: {
 }) {
     const apiUrl = "https://boamp-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/boamp"
 
-    const keywords = opts.keywordsCSV.split(",").map(s => s.trim()).filter(Boolean);
-    if (!keywords.length) throw new Error("Provide at least one keyword");
+    /**const keywords = opts.keywordsCSV.split(",").map(s => s.trim()).filter(Boolean);
+    if (!keywords.length) throw new Error("Provide at least one keyword");*/
 
     const limit = Math.min(100, opts.maxResults ?? 200);
 
