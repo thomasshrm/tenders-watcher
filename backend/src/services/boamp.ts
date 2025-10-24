@@ -137,14 +137,7 @@ export async function fetchExpiringContracts(opts: {
     /**const searchTerms = [...keywords];
     if (searchTerms.length) params.set("search", searchTerms.join(" "));*/
 
-    // Filtre temporel serveur (ex: dernières X années) via where sur dateparution, pour éviter trop de bruit
-    // Exemple: WHERE dateparution >= "2018-01-01"
-    // Tu peux durcir si besoin : params.set("where", `dateparution >= date("2020-01-01")`);
-    // On laisse sans where strict ici, le filtrage final se fait sur expiration.
-
     const url = `${apiUrl}/records?${params.toString()}`;
-
-    console.log(url);
 
     const r = await fetch(url, { method: "GET" });
     if (!r.ok) {
@@ -219,10 +212,10 @@ export async function fetchExpiringContracts(opts: {
             departement: departement,
             titulaire: titulaire,
             nomacheteur: results[i].nomacheteur,
-            dateparution: results[i].dateparution,         // "YYYY-MM-DD"
+            dateparution: results[i].dateparution,
             url_avis: results[i].url_avis,
-            donnees: results[i].gestion,             // JSON string contenant plein d'infos (dont NB_ANNEE parfois)
-            descripteur_libelle: results[i].descripteur_libelle, // mots-clés
+            donnees: results[i].gestion,
+            descripteur_libelle: results[i].descripteur_libelle,
             type_marche_facette: results[i].type_marche_facette,
             annonce_lie: results[i].annonce_lie ? results[i].annonce_lie[0] : undefined,
             duree: duree,
@@ -232,70 +225,4 @@ export async function fetchExpiringContracts(opts: {
     }
 
     return items;
-
-    //const items: OdsRecord[] = Array.isArray(data?.results) ? data.results : [];
-
-    // Enrichissement: trouve la durée et la base date (parution comme fallback),
-    // calcule expiration, filtre horizon
-    /**const now = new Date();
-     const horizon = addMonths(now, horizonMonths);
-
-    const rows = items.flatMap((src) => {
-    // tentative: chercher une date d'attribution dans `donnees` si présente
-    let base: Date | undefined =
-      parseMaybeDate(src.dateparution);
-
-    try {
-      if (src.donnees) {
-            const obj = JSON.parse(src.donnees);
-            const dateAttr =
-            obj?.ATTRIBUTION?.DECISION?.RENSEIGNEMENT?.DATE_ATTRIBUTION ||
-            obj?.ATTRIBUTION?.DECISION?.RENSEIGNEMENT?.DATE_NOTIFICATION;
-            const dAttr = parseMaybeDate(dateAttr);
-            if (dAttr) base = dAttr;
-        }
-        } catch {
-        
-        }
-
-        const months =
-        parseMonthsFromDonnees(src.donnees) ??
-        (opts.fallbackMonths ?? undefined);
-
-        const expiration = base && months ? addMonths(base, months) : undefined;
-
-        if (!expiration) return [];
-
-        if (!(isAfter(expiration, now) && isBefore(expiration, horizon))) {
-        return [];
-        }
-
-        return [{
-            id: src.id ?? src.idweb,
-            numeroAnnonce: src.idweb ?? src.id,
-            objet: src.objet,
-            acheteur_nom: src.nomacheteur,
-            lieuExecution: undefined,                 // ODS n’a pas toujours ce champ direct
-            lot_intitule: null,
-            lot_description: null,
-            datePublication: src.dateparution,
-            dateNotification: undefined,              // si trouvée dans donnees, on pourrait l’exposer
-            months_inferred: months,
-            base_date_used: "date_attribution_or_parution",
-            base_date_value: toISODate(base),
-            expiration_inferred: toISODate(expiration),
-            source_url: src.url_avis
-        }];
-    });
-
-    console.log(rows)
-
-    // Tri par expiration puis acheteur
-    rows.sort((a, b) => {
-        const da = (a.expiration_inferred ?? "").localeCompare(b.expiration_inferred ?? "");
-        if (da !== 0) return da;
-        return (a.acheteur_nom ?? "").localeCompare(b.acheteur_nom ?? "");
-    });
-
-    return rows;*/
 }
