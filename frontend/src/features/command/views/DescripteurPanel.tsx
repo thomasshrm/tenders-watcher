@@ -12,8 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 
 type Descripteur = {
-    mc_code: number
-    mc_libelle: string
+    code: string
+    libelle: string
 }
 
 export default function DescripteurPanel() {
@@ -28,7 +28,7 @@ export default function DescripteurPanel() {
             setLoading(true)
             setError(null)
             const { data } = await api.get("/api/descripteurs")
-            setDescripteurs(Array.isArray(data?.rows) ? data.rows : [])
+            setDescripteurs(data)
             //setMarkets(Array.isArray(data?.rows) ? data.rows : [])
         } catch (e: any) {
             setError(e?.message ?? "Erreur inconnue")
@@ -43,11 +43,11 @@ export default function DescripteurPanel() {
     }, [user]);
 
     const filtered = useMemo(() => {
-        const term = query.trim().toLowerCase();
-        if(!term) return descripteurs;
+        const term = query.trim().toLowerCase()
+        if(!term) return descripteurs
         return descripteurs.filter(d =>
-        [String(d.mc_code), d.mc_libelle]
-            .some(s => s?.toLowerCase().includes(term)),
+            [d.code, d.libelle]
+            .some(s => s?.toLowerCase().includes(term))
         )
     }, [descripteurs, query]);
 
@@ -88,10 +88,10 @@ export default function DescripteurPanel() {
                 </TableRow>
             ) : !loading &&
             !error &&
-            descripteurs.map((descripteur) => (
-                        <TableRow key={descripteur.mc_code} className="hover:bug-muted/50">
-                            <TableCell>{descripteur.mc_code}</TableCell>
-                            <TableCell className="whitespace-normal wrap-break-word">{descripteur.mc_libelle}</TableCell>
+            filtered.map((descripteur) => (
+                        <TableRow key={descripteur.code} className="hover:bug-muted/50">
+                            <TableCell>{descripteur.code}</TableCell>
+                            <TableCell className="whitespace-normal wrap-break-word">{descripteur.libelle}</TableCell>
                         </TableRow>
             ))}
                 </TableBody>
