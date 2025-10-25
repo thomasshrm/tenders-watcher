@@ -60,7 +60,7 @@ export function SingleWindow({ w, close, focus, move }: Props) {
       onMouseDown={() => focus(w.id)}
     >
       <div
-        className="flex items-center justify-between px-3 py-2 border-b border-neutral-800 cursor-grab active:cursor-grabbing"
+        className="flex items-center justify-between px-3 py-0.5 border-b border-neutral-800 cursor-grab active:cursor-grabbing"
         onPointerDown={onHeaderPointerDown}
         onPointerMove={onHeaderPointerMove}
         onPointerUp={onHeaderPointerUp}
@@ -71,7 +71,7 @@ export function SingleWindow({ w, close, focus, move }: Props) {
         <a
           data-nodrag
           onClick={() => close(w.id)}
-          className="h-8 w-8 grid place-items-center hover:bg-neutral-900 rounded"
+          className="h-8 w-8 grid place-items-center"
           aria-label="Close"
         >
           <X className="h-3 w-3 text-neutral-300" />

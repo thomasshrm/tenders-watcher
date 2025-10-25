@@ -131,8 +131,8 @@ export default function MarketLookupPanel() {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-semibold">Market Lookup</h3>
-      <p className="text-sm text-neutral-400">Rechercher les attributions au cours de la période sélectionnée.</p>
+      <p className="text-base font-semibold text-neutral-400">Rechercher les attributions au cours de la période sélectionnée.</p>
+      <br />
       <form 
         className="space-y-4"
         onSubmit={form.handleSubmit(onSubmit)}
@@ -173,11 +173,10 @@ export default function MarketLookupPanel() {
               )
             }
           </div>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" variant="secondary" disabled={loading}>
               {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Recherche en cours...</> : "Rechercher"}
             </Button>
       </form>
-      {loading && <p>Loading...</p>}
       {error && <p>Error</p>}
 
       {!loading && !error && markets.length === 0 && (
