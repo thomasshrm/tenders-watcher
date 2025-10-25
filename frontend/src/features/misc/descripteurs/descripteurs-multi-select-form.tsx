@@ -18,6 +18,7 @@ type Descripteur = {
 
 export default function DescripteursMultiSelectForm() {
     const [descripteurs, setDescripteurs] = useState<Descripteur[]>([]);
+    const [userDescripteurs, setUserDescripteurs] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth() as any;
@@ -27,8 +28,24 @@ export default function DescripteursMultiSelectForm() {
             setLoading(true)
             setError(null)
             const { data } = await api.get("/api/descripteurs")
-            console.log(data)
             setDescripteurs(data)
+        } catch (e: any) {
+            setError(e?.message ?? "Erreur inconnue")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const fetchUserDescripteurs = async () => {
+        try{
+            setLoading(true)
+            setError(null)
+            const { data } = await api.get("/api/user_descripteurs")
+            const codes: string[] = String(data?.[0]?.codes ?? "")
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+            setUserDescripteurs(codes)
         } catch (e: any) {
             setError(e?.message ?? "Erreur inconnue")
         } finally {
@@ -39,22 +56,26 @@ export default function DescripteursMultiSelectForm() {
     useEffect(() => {
         if (!user) return;
         fetchDescripteurs();
+        fetchUserDescripteurs();
     }, [user]);
 
     return (
-        <MultiSelect defaultValues={["330","281"]}>
+        <MultiSelect 
+            values={userDescripteurs}
+            onValuesChange={setUserDescripteurs}
+        >
             <MultiSelectTrigger className="w-full max-w-[400px]">
                 <MultiSelectValue placeholder="Sélectionner vos marchés préférés..." />
             </MultiSelectTrigger>
             <MultiSelectContent>
                 <MultiSelectGroup>
-                    {loading && <MultiSelectItem value="">Chargement en cours</MultiSelectItem>}
-                    {error && <MultiSelectItem value="">Erreur lors du chargement</MultiSelectItem>}
+                    {loading && <MultiSelectItem key="load" value="load">Chargement en cours</MultiSelectItem>}
+                    {error && <MultiSelectItem key="err" value="err">Erreur lors du chargement</MultiSelectItem>}
 
                     {!loading &&
                     !error &&
                     descripteurs.map((descripteur) => (
-                        <MultiSelectItem value={descripteur.code}>{descripteur.libelle}</MultiSelectItem>
+                        <MultiSelectItem key={descripteur.code} value={descripteur.code}>{descripteur.libelle}</MultiSelectItem>
                     ))}
                 </MultiSelectGroup>
             </MultiSelectContent>

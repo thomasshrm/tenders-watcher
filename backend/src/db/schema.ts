@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, serial, varchar, boolean, timestamp, uniqueIndex, numeric } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, serial, varchar, boolean, timestamp, uniqueIndex, numeric, text, integer } from "drizzle-orm/pg-core";
 
 // ENUMS
 export const accountRoleEnum    = pgEnum("account_role", ["admin", "user"]);
@@ -21,4 +21,10 @@ export const marketCodes = pgTable("market_codes", {
     id: serial("id").primaryKey(),
     code: varchar("code").notNull().unique(),
     libelle: varchar("libelle", { length: 100 }).notNull(),
+});
+
+export const userMarketCodes = pgTable("user_market_codes", {
+    id: serial("id").primaryKey(),
+    codes: text("codes").notNull().default(""),
+    ownerUserId: integer("owner_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
 });

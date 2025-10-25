@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { fetchExpiringContracts } from "../services/boamp";
 import { db } from "../db/client";
-import { marketCodes } from "../db/schema";
+import { marketCodes, userMarketCodes } from "../db/schema";
+import { getAuthUser, requireAuth } from "../middlewares/auth.middleware";
+import { eq } from "drizzle-orm";
 
 export const router = Router();
 
@@ -15,7 +17,7 @@ export const router = Router();
  *   horizonMonths?: number (default 6)
  */
 //GET /api/expiring?keywords=informatique&departement=54,57,88&cpv=48000000,72000000,30200000&fallbackMonths=48&horizonMonths=6
-router.get("/expiring", async (req, res) => {
+router.get("/expiring", requireAuth, async (req, res) => {
     try {
         /**const keywords = String(req.query.keywords ?? "").trim();
         if (!keywords) return res.status(400).json({ error: "keywords is required (comma-separated)" });*/
@@ -41,7 +43,7 @@ router.get("/expiring", async (req, res) => {
     } 
 });
 
-router.get("/descripteurs", async (req, res) => {
+router.get("/descripteurs", requireAuth, async (req, res) => {
     const rows = await db
         .select({
             code: marketCodes.code,
@@ -50,6 +52,26 @@ router.get("/descripteurs", async (req, res) => {
         .from(marketCodes);
     res.json(rows);
 });
+
+router.post("/descripteurs", requireAuth, async (req, res) => {
+    const user = getAuthUser(req);
+    const { codes } = req.body ?? {};
+
+
+});
+
+router.get("/user_descripteurs", requireAuth, async (req, res) => {
+    const user = getAuthUser(req);
+    const rows = await db
+        .select()
+        .from(userMarketCodes)
+        .where(
+            eq(userMarketCodes.ownerUserId, user.sub)
+        )
+        .limit(1);
+    if(!rows) return res.json({})
+    res.json(rows)
+})
 
 // ✅ Répondre quelque chose
 router.get("/status", (_req, res) => {
