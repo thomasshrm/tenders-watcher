@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { fetchExpiringContracts } from "../services/boamp";
+import { db } from "../db/client";
+import { marketCodes } from "../db/schema";
 
 export const router = Router();
 
@@ -37,6 +39,16 @@ router.get("/expiring", async (req, res) => {
         console.error(e);
         res.status(500).json({ error: e?.message ?? "Internal error" });
     } 
+});
+
+router.get("/descripteurs", async (req, res) => {
+    const rows = await db
+        .select({
+            code: marketCodes.code,
+            libelle: marketCodes.libelle,
+        })
+        .from(marketCodes);
+    res.json(rows);
 });
 
 // ✅ Répondre quelque chose

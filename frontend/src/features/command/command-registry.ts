@@ -11,6 +11,11 @@ export const COMMANDS = {
     view: lazy(() => import("./views/MarketLookupPanel")),
     size: { w: 1300, h: 700 },
   },
+  DC: {
+    label: "Descripter Code",
+    view: lazy(() => import("./views/DescripteurPanel")),
+    size: { w: 700, h: 400 },
+  },
 } as const
 
 // Types dérivés automatiquement
