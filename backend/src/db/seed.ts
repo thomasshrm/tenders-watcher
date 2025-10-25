@@ -100,7 +100,6 @@ async function insertMarketCodes(){
             );
         }
 
-        console.log(results.join("\n"));
         console.log("✅ Seeding market codes done");
     } catch (e: any) {
         console.error(e);
