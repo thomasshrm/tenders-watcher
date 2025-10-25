@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, serial, varchar, boolean, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, serial, varchar, boolean, timestamp, uniqueIndex, numeric } from "drizzle-orm/pg-core";
 
 // ENUMS
 export const accountRoleEnum    = pgEnum("account_role", ["admin", "user"]);
@@ -16,3 +16,9 @@ export const users = pgTable("users", {
         "uq_email_display": uniqueIndex("uq_users_email_display").on(t.email, t.name),
     })
 );
+
+export const marketCodes = pgTable("market_codes", {
+    id: serial("id").primaryKey(),
+    code: varchar("code").notNull().unique(),
+    libelle: varchar("libelle", { length: 100 }).notNull(),
+});

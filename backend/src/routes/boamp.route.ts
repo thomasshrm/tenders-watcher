@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { fetchExpiringContracts } from "../services/boamp";
-import { open, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 
 export const router = Router();
 

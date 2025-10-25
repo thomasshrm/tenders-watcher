@@ -3,7 +3,8 @@ dotenv.config();
 
 import bcrypt from "bcrypt";
 import { db } from "./client";
-import { users } from './schema';
+import { users, marketCodes } from './schema';
+import { readFileSync } from 'node:fs';
 
 type Role = "admin" | "user";
 
@@ -45,7 +46,7 @@ async function upsertUser(opts: {
         return `Upserted: ${email} (${name}) [${role}]`;
 }
 
-async function main() {
+async function insertUser() {
     const { APP_DEFAULT_EMAIL, APP_DEFAULT_USER, APP_DEFAULT_PASSWORD } = process.env;
     if (!APP_DEFAULT_EMAIL) throw new Error("APP_DEFAULT_EMAIL is missing");
     if (!APP_DEFAULT_USER) throw new Error("APP_DEFAULT_USER is missing");
@@ -65,7 +66,50 @@ async function main() {
     );
 
     console.log(results.join("\n"));
-    console.log("✅ Seeding done")
+    console.log("✅ Seeding users done")
+}
+
+async function upsertMarketCodes(opts: {
+    code: string;
+    libelle: string;
+}){
+    const { code, libelle } = opts;
+    await db
+        .insert(marketCodes)
+        .values({ code, libelle })
+        .onConflictDoUpdate({
+            target: marketCodes.code,
+            set: { libelle },
+        });
+
+    return `Upserted: ${code}: ${libelle}`
+}
+
+async function insertMarketCodes(){
+    try {
+        const data = readFileSync("./src/db/resources/descripteurs.json", "utf-8");
+        const descripteurs = JSON.parse(data);
+
+        const results: string[] = [];
+        for(let i = 0; i <= descripteurs.length - 1; i++) {
+            results.push(
+                await upsertMarketCodes({
+                    code: descripteurs[i]?.mc_code,
+                    libelle: descripteurs[i]?.mc_libelle,
+                })
+            );
+        }
+
+        console.log(results.join("\n"));
+        console.log("✅ Seeding market codes done");
+    } catch (e: any) {
+        console.error(e);
+    }
+}
+
+async function main() {
+    await insertUser();
+    await insertMarketCodes();
 }
 
 main()
