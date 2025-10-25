@@ -53,8 +53,7 @@ export default function DescripteurPanel() {
 
     return (
         <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Registre des codes descripteurs</h3>
-            <p className="text-sm text-neutral-400">Index des codes descripteurs fournis par le BOAMP</p>
+            <p className="text-base font-semibold text-neutral-400">Index des codes descripteurs fournis par le BOAMP</p>
             <div className="flex items-center gap-2">
                 <div className="w-64">
                     <Input

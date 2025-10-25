@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/lib/api";
 import { z } from 'zod';
 import { useAuth } from "@/features/auth/auth-context";
@@ -91,7 +91,6 @@ export default function MarketLookupPanel() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth() as any;
 
   const form = useForm<FormInput>({
     resolver: zodResolver(schema),
@@ -111,24 +110,6 @@ export default function MarketLookupPanel() {
     }
   }
 
-  const fetchMarkets = async () => {
-    try{
-      setLoading(true)
-      setError(null)
-      const { data } = await api.get(`/api/expiring?departement=${departementFormat}&descripteur=${descripteurFormat}&fallbackMonths=45&horizonMonths=1`)
-      setMarkets(Array.isArray(data?.rows) ? data.rows : [])
-    } catch (e: any) {
-      setError(e?.message ?? "Erreur inconnue")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  /**useEffect(() => {
-    if (!user) return;
-    fetchMarkets();
-  }, [user]);*/
-
   return (
     <div className="space-y-2">
       <p className="text-base font-semibold text-neutral-400">Rechercher les attributions au cours de la période sélectionnée.</p>
@@ -139,7 +120,7 @@ export default function MarketLookupPanel() {
       >
           <div className="grid gap-2">
             <Label htmlFor='descripteur'>Descripteurs</Label>
-            <Input id='descripteur' type='text' {...form.register('descripteur')} defaultValue={descripteurFormat} />
+            <Input className="w-192" id='descripteur' type='text' {...form.register('descripteur')} defaultValue={descripteurFormat} />
             {
               form.formState.errors.descripteur && (
                 <p className="text-sm text-destructive">{form.formState.errors.descripteur.message}</p>
@@ -148,7 +129,7 @@ export default function MarketLookupPanel() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor='departement'>Départements</Label>
-            <Input id='departement' type='text' {...form.register('departement')} defaultValue={departementFormat} />
+            <Input className="w-lg" id='departement' type='text' {...form.register('departement')} defaultValue={departementFormat} />
             {
               form.formState.errors.departement && (
                 <p className="text-sm text-destructive">{form.formState.errors.departement.message}</p>
@@ -157,7 +138,7 @@ export default function MarketLookupPanel() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor='fallback_month'>Mois en arrière</Label>
-            <Input id='fallback_month' type='number' {...form.register('fallback_month', {valueAsNumber: true})} defaultValue="48" />
+            <Input className="w-64" id='fallback_month' type='number' {...form.register('fallback_month', {valueAsNumber: true})} defaultValue="48" />
             {
               form.formState.errors.fallback_month && (
                 <p className="text-sm text-destructive">{form.formState.errors.fallback_month.message}</p>
@@ -166,7 +147,7 @@ export default function MarketLookupPanel() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor='horizon_month'>Nombre de mois à rechercher</Label>
-            <Input id='horizon_month' type='number' {...form.register('horizon_month', {valueAsNumber:true})} defaultValue="3" />
+            <Input className="w-64" id='horizon_month' type='number' {...form.register('horizon_month', {valueAsNumber:true})} defaultValue="3" />
             {
               form.formState.errors.horizon_month && (
                 <p className="text-sm text-destructive">{form.formState.errors.horizon_month.message}</p>

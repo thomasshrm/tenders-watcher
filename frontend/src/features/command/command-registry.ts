@@ -16,6 +16,11 @@ export const COMMANDS = {
     view: lazy(() => import("./views/DescripteurPanel")),
     size: { w: 700, h: 400 },
   },
+  PP: {
+    label: "Personal Preferences",
+    view: lazy(() => import("./views/PersonalPreferencesPanel")),
+    size: { w: 700, h: 400 },
+  },
 } as const
 
 // Types dérivés automatiquement
