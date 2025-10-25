@@ -42,7 +42,7 @@ export default function DescripteursMultiSelectForm() {
     }, [user]);
 
     return (
-        <MultiSelect>
+        <MultiSelect defaultValues={["330","281"]}>
             <MultiSelectTrigger className="w-full max-w-[400px]">
                 <MultiSelectValue placeholder="Sélectionner vos marchés préférés..." />
             </MultiSelectTrigger>
