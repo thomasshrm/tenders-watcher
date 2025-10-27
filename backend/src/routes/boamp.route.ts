@@ -57,7 +57,7 @@ router.post("/descripteurs", requireAuth, async (req, res) => {
     const user = getAuthUser(req);
     const { codes } = req.body ?? {};
 
-
+    console.log(req)
 });
 
 router.get("/user_descripteurs", requireAuth, async (req, res) => {
