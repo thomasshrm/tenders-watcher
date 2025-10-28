@@ -17,6 +17,34 @@ import {
 } from '@/components/ui/table'
 import { Link } from "react-router-dom";
 
+const descripteurIndex = [
+  23,
+  204,
+  97,
+  81,
+  162,
+  454,
+  107,
+  207,
+  338,
+  47,
+  14,
+  453,
+  463,
+  339,
+  402,
+  283,
+  186,
+  2,
+  21,
+  133,
+  171,
+  163,
+  68,
+];
+
+const descripteurFormat = descripteurIndex.toString();
+
 type Market = {
     idweb: string
     id: string
@@ -57,7 +85,7 @@ export default function ClientLookupPanel() {
         setError(null)
         try {
             const parsed = schema.parse(values)
-            const { data } = await api.get(`/api/client?client=${parsed.client}`)
+            const { data } = await api.get(`/api/client?client=${parsed.client}&descripteur=${descripteurFormat}`)
             setMarkets(Array.isArray(data?.rows) ? data.rows : [])
         } catch (e: any) {
             setError(e?.message ?? "Unknown error")

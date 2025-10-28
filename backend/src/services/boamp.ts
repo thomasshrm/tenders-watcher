@@ -229,6 +229,9 @@ export async function fetchExpiringContracts(opts: {
 
 export async function fetchContractsByClient (opts: {
   client?: string;
+  descripteur?: string;
+  fallbackMonths?: number;
+  horizonMonths?: number;  
 }) {
   const apiUrl = "https://boamp-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/boamp"
 
@@ -239,10 +242,12 @@ export async function fetchContractsByClient (opts: {
   const params = new URLSearchParams();
 
   const now = new Date();
-  const fallbackMonths = 48;
+  const horizonMonths = opts.horizonMonths ?? 24;
+  const fallbackMonths = opts.fallbackMonths ?? 60;
   const from = new Date(now);
   from.setMonth(from.getMonth() - fallbackMonths);
   const to = new Date(now);
+  to.setMonth(to.getMonth() + horizonMonths - fallbackMonths);
   const fromISO = from.toISOString().slice(0, 10);
   const toISO = to.toISOString().slice(0, 10);
   params.set("where", `dateparution >= "${fromISO}" AND dateparution <= "${toISO}"`);
@@ -264,6 +269,25 @@ export async function fetchContractsByClient (opts: {
           } else {
               params.set("where", `(${clause})`);
           }*/
+      }
+  }
+
+  // gestion des codes descripteurs
+  if (opts.descripteur) {
+      const descs = opts.descripteur
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean);
+      if(descs.length) {
+          const clause = descs
+              .map(d => `descripteur_code = "${d}"`)
+              .join(" OR ");
+          const existing = params.get("where");
+          if (existing) {
+              params.set("where", `${existing} AND (${clause})`);
+          } else {
+              params.set("where", `(${clause})`);
+          }
       }
   }
 

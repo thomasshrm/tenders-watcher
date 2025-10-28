@@ -46,8 +46,13 @@ router.get("/expiring", requireAuth, async (req, res) => {
 router.get("/client", requireAuth, async (req, res) => {
     try {
         const client = req.query.client ? String(req.query.client) : undefined;
+        const descripteur = req.query.descripteur ? String(req.query.descripteur) : undefined;
+        const fallbackMonths = req.query.fallbackMonths ? Number(req.query.fallbackMonths) : undefined;
+        const horizonMonths = req.query.horizonMonths ? Number(req.query.horizonMonths) : undefined;
+
         const rows = await fetchContractsByClient({
             client,
+            descripteur,
         });
         res.json({ rows });
     } catch (e: any) {
