@@ -226,3 +226,135 @@ export async function fetchExpiringContracts(opts: {
 
     return items;
 }
+
+export async function fetchContractsByClient (opts: {
+  client?: string;
+}) {
+  const apiUrl = "https://boamp-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/boamp"
+
+  // Construction de la requête ODS
+  // - dataset = boamp
+  // - refine=nature:ATTRIBUTION
+  // - search : mots-clés + (optionnel) region concaténés pour un "full-text"
+  const params = new URLSearchParams();
+
+  const now = new Date();
+  const fallbackMonths = 48;
+  const from = new Date(now);
+  from.setMonth(from.getMonth() - fallbackMonths);
+  const to = new Date(now);
+  const fromISO = from.toISOString().slice(0, 10);
+  const toISO = to.toISOString().slice(0, 10);
+  params.set("where", `dateparution >= "${fromISO}" AND dateparution <= "${toISO}"`);
+  params.append("refine", "nature:ATTRIBUTION");
+
+  if (opts.client) {
+      const clients = opts.client
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean);
+      if(clients.length) {
+          const clause = clients
+              .map(d => `nomacheteur LIKE "${d}*"`)
+              .join(" OR ");
+          const existing = params.get("where");
+          params.set("where", existing ? `${existing} AND (${clause})` : `(${clause})`);
+          /**if (existing) {
+              params.set("where", `${existing} AND (${clause})`);
+          } else {
+              params.set("where", `(${clause})`);
+          }*/
+      }
+  }
+
+  const url = `${apiUrl}/records?${params.toString()}&limit=100`;
+
+  const r = await fetch(url, { method: "GET" });
+  if (!r.ok) {
+      const txt = await r.text().catch(() => "");
+      throw new Error(`Datadila error ${r.status}: ${txt}`);
+  }
+  const data: any = await r.json();
+
+  const totalCount = data.total_count
+
+  if (totalCount === 0) return [];
+
+  const results = data.results
+
+  const items: OdsRecord[] = []
+
+  for (let i = 0; i <= totalCount - 1; i++) {
+        const linkedAnnonce = results[i]?.annonce_lie ? results[i].annonce_lie[0] : undefined;
+        let duree: number | undefined;
+        let renouvellement: string | undefined;
+        let datefin: string | undefined;
+        const parutionStr: string | undefined = results[i]?.dateparution;
+        const baseDate = parutionStr ? parseISO(parutionStr) : undefined;
+
+        if (linkedAnnonce) {
+          const urlLinked = `${apiUrl}/records?refine=idweb%3A${linkedAnnonce}`;
+
+          const r = await fetch(urlLinked, { method: "GET" });
+          if (!r.ok) {
+              const txt = await r.text().catch(() => "");
+              throw new Error(`Datadila error ${r.status}: ${txt}`);
+          }
+
+          const linkedData: any = await r.json();
+          const first = Array.isArray(linkedData.results) ? linkedData.results[0] : undefined;
+          if (first?.donnees) {
+            try {
+              const donnees = JSON.parse(first.donnees);
+
+              const lot = Array.isArray(donnees?.OBJET?.LOTS?.LOT)
+                ? donnees.OBJET.LOTS.LOT[0]
+                : donnees?.OBJET?.LOTS?.LOT;
+
+              const rawDuree = lot?.DUREE_MOIS ?? lot?.CARACTERISTIQUES?.DUREE_MOIS ?? null;
+              if (rawDuree != null) {
+                const n = Number(String(rawDuree).replace(",", "."));
+                if (!Number.isNaN(n) && n > 0) duree = Number(Math.round(n));
+              }
+              renouvellement = lot?.RENOUVELLEMENT_DESCRIPTION ?? undefined;
+              if (baseDate && isValid(baseDate) && typeof duree === "number" && Number.isFinite(duree)) {
+                const d = addMonths(baseDate, duree);
+                datefin = d.toISOString().slice(0, 10);
+              } else {
+                datefin = undefined;
+              }
+            } catch (e) {
+              console.warn("JSON donnees parse error: ", e);
+            }
+          }
+        } else {
+          duree = undefined;
+          renouvellement = undefined;
+        }
+
+        let titulaire = results[i]?.titulaire ? results[i]?.titulaire[0] : undefined;
+        let departement = results[i]?.code_departement ? results[i]?.code_departement[0] : undefined;
+
+        if(results[i]?.idweb) {
+          items.push({
+            idweb: results[i].idweb,
+            id: results[i].id,
+            objet: results[i].objet,
+            departement: departement,
+            titulaire: titulaire,
+            nomacheteur: results[i].nomacheteur,
+            dateparution: results[i].dateparution,
+            url_avis: results[i].url_avis,
+            donnees: results[i].gestion,
+            descripteur_libelle: results[i].descripteur_libelle,
+            type_marche_facette: results[i].type_marche_facette,
+            annonce_lie: results[i].annonce_lie ? results[i].annonce_lie[0] : undefined,
+            duree: duree,
+            renouvellement: renouvellement,
+            datefin: datefin,
+          });
+        }
+    }
+
+    return items;
+}

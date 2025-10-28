@@ -1,0 +1,150 @@
+import { useState } from "react";
+import { z } from 'zod';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "@/lib/api";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import {
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow,
+} from '@/components/ui/table'
+import { Link } from "react-router-dom";
+
+type Market = {
+    idweb: string
+    id: string
+    objet: string
+    departement: string
+    titulaire: string
+    nomacheteur: string
+    dateparution: string
+    url_avis: string
+    donnees: string
+    descripteur_libelle: string
+    type_marche_facette: string
+    annonce_lie: string
+    duree: number
+    renouvellement: string
+    datefin: string
+}
+
+const schema = z.object({
+    client: z.string().nonempty(),
+})
+
+type FormSchema = typeof schema;
+type FormInput = z.input<typeof schema>;
+type FormOutput = z.output<typeof schema>;
+
+export default function ClientLookupPanel() {
+    const [markets, setMarkets] = useState<Market[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const form = useForm<FormInput>({
+        resolver: zodResolver(schema),
+    })
+
+    async function onSubmit(values: FormInput) {
+        setLoading(true)
+        setError(null)
+        try {
+            const parsed = schema.parse(values)
+            const { data } = await api.get(`/api/client?client=${parsed.client}`)
+            setMarkets(Array.isArray(data?.rows) ? data.rows : [])
+        } catch (e: any) {
+            setError(e?.message ?? "Unknown error")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div className="space-y-2">
+            <p className="text-base font-semibold text-neutral-400">Rechercher les marchés par client.</p>
+            <p className="text-base text-neutral-400">(A venir: Recherche par date)</p>
+            <br />
+            <form 
+                className="space-y-4"
+                onSubmit={form.handleSubmit(onSubmit)}
+            >
+                <div className="grid gap-2">
+                    <Label htmlFor='client'>Client</Label>
+                    <Input className="w-96" id='client' type='text' {...form.register('client')} />
+                    {
+                    form.formState.errors.client && (
+                        <p className="text-sm text-destructive">{form.formState.errors.client.message}</p>
+                    )
+                    }
+                </div>
+                <Button type="submit" variant="secondary" disabled={loading}>
+                    {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Recherche en cours...</> : "Rechercher"}
+                </Button>
+            </form>
+
+            
+            {error && <p>Error</p>}
+
+            {!loading && !error && markets.length === 0 && (
+                <p>No market.</p>
+            )}
+
+            <div className="max-w-full overflow-x-auto rounded-md border border-neutral-800">
+                <Table className="w-full table-fixed">
+                <TableHeader>
+                    <TableRow>
+                    <TableHead className="w-[80px] text-white">ID</TableHead>
+                    <TableHead className="w-[40px] text-white">DPT</TableHead>
+                    <TableHead className="w-[150px] text-white">Client</TableHead>
+                    <TableHead className="text-white">Objet</TableHead>
+                    <TableHead className="w-[120px] text-white">Date avis</TableHead>
+                    <TableHead className="w-[120px] text-white">Titulaire</TableHead>
+                    <TableHead className="w-[60px] text-white">Durée</TableHead>
+                    <TableHead className="w-[60px] text-white">Renew</TableHead>
+                    <TableHead className="w-[120px] text-white">Date fin</TableHead>
+                    {/**<TableHead className="text-white">Info renew</TableHead>*/}
+                    <TableHead className="w-[60px] text-white">Lien</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {!loading &&
+                    !error &&
+                    markets.map((market) => (
+                    <TableRow key={market.idweb} className="hover:bug-muted/50">
+                        <TableCell>{market.idweb}</TableCell>
+                        <TableCell>{market.departement}</TableCell>
+                        <TableCell className="whitespace-normal wrap-break-word">{market.nomacheteur}</TableCell>
+                        <TableCell className="whitespace-normal wrap-break-word">{market.objet}</TableCell>
+                        <TableCell className="whitespace-normal wrap-break-word">{market.dateparution}</TableCell>
+                        <TableCell className="whitespace-normal wrap-break-word">{market.titulaire}</TableCell>
+                        <TableCell>{market.duree}</TableCell>
+                        { market.datefin && market.renouvellement ? 
+                        <TableCell className="text-red-400">Oui</TableCell> :
+                        market.renouvellement && !market.datefin ?
+                        <TableCell>Oui</TableCell> :
+                        !market.renouvellement && market.datefin ?
+                        <TableCell className="text-green-300">Non</TableCell> :
+                        <TableCell>Non</TableCell>
+                        }
+                        { market.datefin && !market.renouvellement ? 
+                        <TableCell className="text-green-300">{market.datefin}</TableCell> : 
+                        market.datefin && market.renouvellement ?
+                        <TableCell className="text-red-400">{market.datefin}</TableCell> : 
+                        <TableCell></TableCell> }
+                        {/**<TableCell className="whitespace-normal wrap-break-word">{market.renouvellement}</TableCell>*/}
+                        <TableCell>{market.annonce_lie ? <Link to={`https://www.boamp.fr/pages/avis/?q=idweb:${market.annonce_lie}`} target="_blank" rel="noopener noreferrer" >GO</Link> : ""}</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
+        </div>
+    );
+}

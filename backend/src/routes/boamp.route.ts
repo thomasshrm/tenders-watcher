@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { fetchExpiringContracts } from "../services/boamp";
+import { fetchContractsByClient, fetchExpiringContracts } from "../services/boamp";
 import { db } from "../db/client";
 import { marketCodes, userMarketCodes } from "../db/schema";
 import { getAuthUser, requireAuth } from "../middlewares/auth.middleware";
@@ -41,6 +41,19 @@ router.get("/expiring", requireAuth, async (req, res) => {
         console.error(e);
         res.status(500).json({ error: e?.message ?? "Internal error" });
     } 
+});
+
+router.get("/client", requireAuth, async (req, res) => {
+    try {
+        const client = req.query.client ? String(req.query.client) : undefined;
+        const rows = await fetchContractsByClient({
+            client,
+        });
+        res.json({ rows });
+    } catch (e: any) {
+        console.error(e);
+        res.status(500).json({ error: e?.message ?? "Internal error" });
+    }
 });
 
 router.get("/descripteurs", requireAuth, async (req, res) => {
